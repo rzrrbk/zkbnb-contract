@@ -6,6 +6,9 @@ import "../lib/TxTypes.sol";
 /// @title ZkBNB events
 /// @author ZkBNB Team
 interface Events {
+  /// for POC
+  event GasUsed(uint gasUsed);
+
   /// @notice Event emitted when a block is committed
   event BlockCommit(uint32 blockNumber);
 

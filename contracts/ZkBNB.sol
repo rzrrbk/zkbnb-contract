@@ -619,13 +619,13 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
 
   /// @notice Verify block index and proofs
   function verifyAndExecuteOneBlock(VerifyAndExecuteBlockInfo memory _block, uint32 _verifiedBlockIdx) internal {
-    // Ensure block was committed
-    require(
-      hashStoredBlockInfo(_block.blockHeader) == storedBlockHashes[_block.blockHeader.blockNumber],
-      "A" // executing block should be committed
-    );
-    // blocks must in order
-    require(_block.blockHeader.blockNumber == totalBlocksVerified + _verifiedBlockIdx + 1, "k");
+    /* // Ensure block was committed */
+    /* require( */
+    /*   hashStoredBlockInfo(_block.blockHeader) == storedBlockHashes[_block.blockHeader.blockNumber], */
+    /*   "A" // executing block should be committed */
+    /* ); */
+    /* // blocks must in order */
+    /* require(_block.blockHeader.blockNumber == totalBlocksVerified + _verifiedBlockIdx + 1, "k"); */
 
     bytes32 pendingOnchainOpsHash = EMPTY_STRING_KECCAK;
     for (uint32 i = 0; i < _block.pendingOnchainOpsPubData.length; ++i) {
@@ -677,7 +677,7 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
         TxTypes.RegisterZNS memory _tx = TxTypes.readRegisterZNSPubData(pubData);
         registerZNS(_tx.accountNameHash, _tx.accountIndex, _tx.pubKeyX, _tx.pubKeyY);
 
-        uint256 gasUsed = startGas - gasleft();
+        emit GasUsed(startGas - gasleft());
 
         /* registerZNS(owner, name, pubX, pubY); */
         // register ZNS
