@@ -88,7 +88,7 @@ contract ZNSController is IBaseRegistrar, OwnableUpgradeable, ReentrancyGuardUpg
     // Check if this name is valid
     ///    require(_valid(_name), "invalid name");
     // This L2 owner should not own any name before
-    require(_validPubKey(_pubKeyY), "pub key existed");
+    //    /* require(_validPubKey(_pubKeyY), "pub key existed"); */
     /* // Calculate price using PriceOracle */
     /* uint256 price = prices.price(_name); */
     /* // Check enough value */

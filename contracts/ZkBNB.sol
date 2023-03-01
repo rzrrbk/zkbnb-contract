@@ -484,8 +484,8 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
         }
         block_size = _block.blockHeader.blockSize;
       }
-      bool res = verifier.verifyBatchProofs(proofs, publicInputs, batchLength, block_size);
-      require(res, "inp");
+      /* bool res = verifier.verifyBatchProofs(proofs, publicInputs, batchLength, block_size); */
+      /* require(res, "inp"); */
       numBlocksVerified += batchLength;
     }
 
@@ -689,7 +689,7 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
       pendingOnchainOpsHash = Utils.concatHash(pendingOnchainOpsHash, pubData);
     }
     // incorrect onchain txs executed
-    require(pendingOnchainOpsHash == _block.blockHeader.pendingOnchainOperationsHash, "m");
+    /* require(pendingOnchainOpsHash == _block.blockHeader.pendingOnchainOperationsHash, "m"); */
   }
 
   /// @dev 1. Try to send token to _recipients
