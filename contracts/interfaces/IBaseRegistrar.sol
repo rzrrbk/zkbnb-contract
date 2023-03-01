@@ -17,14 +17,14 @@ interface IBaseRegistrar {
     uint256 price
   );
 
-  // Register a node under the base node.
-  function registerZNS(
-    string calldata _name,
-    address _owner,
-    bytes32 zkbnbPubKeyX,
-    bytes32 zkbnbPubKeyY,
-    address _resolver
-  ) external payable returns (bytes32, uint32);
+  /* // Register a node under the base node. */
+  /* function registerZNS( */
+  /*   string calldata _name, */
+  /*   address _owner, */
+  /*   bytes32 zkbnbPubKeyX, */
+  /*   bytes32 zkbnbPubKeyY, */
+  /*   address _resolver */
+  /* ) external payable returns (bytes32, uint32); */
 
   // Authorizes a controller, who can control this registrar.
   function addController(address controller) external;
