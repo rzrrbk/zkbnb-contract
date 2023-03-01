@@ -321,11 +321,10 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
       TxTypes.TxType txType = TxTypes.TxType(uint8(pubData[pubdataOffset]));
 
       if (txType == TxTypes.TxType.RegisterZNS) {
-        bytes memory txPubData = Bytes.slice(pubData, pubdataOffset, TxTypes.PACKED_TX_PUBDATA_BYTES);
+        bytes memory txPubData;
+        txPubData = Bytes.slice(pubData, pubdataOffset, TxTypes.PACKED_TX_PUBDATA_BYTES);
 
-        TxTypes.RegisterZNS memory registerZNSData = TxTypes.readRegisterZNSPubData(txPubData);
-        checkPriorityOperation(registerZNSData, uncommittedPriorityRequestsOffset + priorityOperationsProcessed);
-        priorityOperationsProcessed++;
+        processableOperationsHash = Utils.concatHash(processableOperationsHash, txPubData);
       } else if (txType == TxTypes.TxType.Deposit) {
         bytes memory txPubData = Bytes.slice(pubData, pubdataOffset, TxTypes.PACKED_TX_PUBDATA_BYTES);
         TxTypes.Deposit memory depositData = TxTypes.readDepositPubData(txPubData);
@@ -669,6 +668,9 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
         TxTypes.WithdrawNft memory _tx = TxTypes.readWithdrawNftPubData(pubData);
         // withdraw NFT
         withdrawOrStoreNFT(_tx);
+      } else if (txType == TxTypes.TxType.RegisterZNS) {
+        TxTypes.RegisterZNS memory _tx = TxTypes.readRegisterZNSPubData(pubData);
+        addNameInfo(_tx.accountNameHash, _tx.accountIndex, address(666));
       } else {
         // unsupported _tx in block verification
         revert("l");

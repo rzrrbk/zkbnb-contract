@@ -117,4 +117,24 @@ contract Storage {
   }
 
   mapping(bytes32 => L2NftInfo) internal mintedNfts;
+
+  struct nameHashInfo {
+    uint32 accountIndex;
+    address owner;
+  }
+  // accountNameHash => nameHashInfo
+  mapping(bytes32 => nameHashInfo) internal nameInfo;
+
+  // The nodehash/namehash of the root node this registrar owns (eg, .legend)
+  function getNameHash(bytes32 baseNode, string memory name) external view returns (bytes32) {
+    uint256 q = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+
+    bytes32 nameHash = keccak256(abi.encodePacked(baseNode, keccak256(bytes(name))));
+    return bytes32(uint256(nameHash) % q);
+  }
+
+  function addNameInfo(bytes32 _nameHash, uint32 _accountIndex, address _owner) internal {
+    require(nameInfo[_nameHash].owner == address(0), "name added already");
+    nameInfo[_nameHash] = nameHashInfo({accountIndex: _accountIndex, owner: _owner});
+  }
 }
