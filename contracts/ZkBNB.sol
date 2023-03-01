@@ -90,12 +90,7 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
     }
   }
 
-  function registerZNS(
-    string calldata _name,
-    address _owner,
-    bytes32 _zkbnbPubKeyX,
-    bytes32 _zkbnbPubKeyY
-  ) external payable {
+  function registerZNS(bytes32 _nameHash, uint32 _accountIndex, bytes32 _zkbnbPubKeyX, bytes32 _zkbnbPubKeyY) internal {
     delegateAdditional();
   }
 
@@ -321,11 +316,17 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
       TxTypes.TxType txType = TxTypes.TxType(uint8(pubData[pubdataOffset]));
 
       if (txType == TxTypes.TxType.RegisterZNS) {
-        bytes memory txPubData = Bytes.slice(pubData, pubdataOffset, TxTypes.PACKED_TX_PUBDATA_BYTES);
+        // POC
+        bytes memory txPubData;
+        txPubData = Bytes.slice(pubData, pubdataOffset, TxTypes.PACKED_TX_PUBDATA_BYTES);
 
-        TxTypes.RegisterZNS memory registerZNSData = TxTypes.readRegisterZNSPubData(txPubData);
-        checkPriorityOperation(registerZNSData, uncommittedPriorityRequestsOffset + priorityOperationsProcessed);
-        priorityOperationsProcessed++;
+        processableOperationsHash = Utils.concatHash(processableOperationsHash, txPubData);
+
+        /* bytes memory txPubData = Bytes.slice(pubData, pubdataOffset, TxTypes.PACKED_TX_PUBDATA_BYTES); */
+
+        /* TxTypes.RegisterZNS memory registerZNSData = TxTypes.readRegisterZNSPubData(txPubData); */
+        /* checkPriorityOperation(registerZNSData, uncommittedPriorityRequestsOffset + priorityOperationsProcessed); */
+        /* priorityOperationsProcessed++; */
       } else if (txType == TxTypes.TxType.Deposit) {
         bytes memory txPubData = Bytes.slice(pubData, pubdataOffset, TxTypes.PACKED_TX_PUBDATA_BYTES);
         TxTypes.Deposit memory depositData = TxTypes.readDepositPubData(txPubData);
@@ -370,14 +371,14 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
   /// @notice Checks that register zns is same as _tx in priority queue
   /// @param _registerZNS register zns
   /// @param _priorityRequestId _tx's id in priority queue
-  function checkPriorityOperation(TxTypes.RegisterZNS memory _registerZNS, uint64 _priorityRequestId) internal view {
-    TxTypes.TxType priorReqType = priorityRequests[_priorityRequestId].txType;
-    // incorrect priority _tx type
-    require(priorReqType == TxTypes.TxType.RegisterZNS, "1H");
+  /* function checkPriorityOperation(TxTypes.RegisterZNS memory _registerZNS, uint64 _priorityRequestId) internal view { */
+  /*   TxTypes.TxType priorReqType = priorityRequests[_priorityRequestId].txType; */
+  /*   // incorrect priority _tx type */
+  /*   require(priorReqType == TxTypes.TxType.RegisterZNS, "1H"); */
 
-    bytes20 hashedPubData = priorityRequests[_priorityRequestId].hashedPubData;
-    require(TxTypes.checkRegisterZNSInPriorityQueue(_registerZNS, hashedPubData), "1K");
-  }
+  /*   bytes20 hashedPubData = priorityRequests[_priorityRequestId].hashedPubData; */
+  /*   require(TxTypes.checkRegisterZNSInPriorityQueue(_registerZNS, hashedPubData), "1K"); */
+  /* } */
 
   /// @notice Checks that deposit is same as _tx in priority queue
   /// @param _deposit Deposit data
@@ -669,6 +670,17 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
         TxTypes.WithdrawNft memory _tx = TxTypes.readWithdrawNftPubData(pubData);
         // withdraw NFT
         withdrawOrStoreNFT(_tx);
+      } else if (txType == TxTypes.TxType.RegisterZNS) {
+        // 计算gas消耗
+        uint256 startGas = gasleft();
+
+        TxTypes.RegisterZNS memory _tx = TxTypes.readRegisterZNSPubData(pubData);
+        registerZNS(_tx.accountNameHash, _tx.accountIndex, _tx.pubKeyX, _tx.pubKeyY);
+
+        uint256 gasUsed = startGas - gasleft();
+
+        /* registerZNS(owner, name, pubX, pubY); */
+        // register ZNS
       } else {
         // unsupported _tx in block verification
         revert("l");

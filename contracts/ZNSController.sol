@@ -71,53 +71,53 @@ contract ZNSController is IBaseRegistrar, OwnableUpgradeable, ReentrancyGuardUpg
   }
 
   /**
-   * @dev Register a new node under base node if it not exists.
-   * @param _name The plaintext of the name to register
-   * @param _owner The address to receive this name
-   * @param _pubKeyX The pub key x of the owner
-   * @param _pubKeyY The pub key y of the owner
-   */
+   /* * @dev Register a new node under base node if it not exists. */
+  /* * @param _name The plaintext of the name to register */
+  /* * @param _owner The address to receive this name */
+  /* * @param _pubKeyX The pub key x of the owner */
+  /* * @param _pubKeyY The pub key y of the owner */
+  //*/
   function registerZNS(
-    string calldata _name,
-    address _owner,
+    bytes32 nameHash,
+    /* address _owner, */
+    uint32 accountIndex,
     bytes32 _pubKeyX,
     bytes32 _pubKeyY,
     address _resolver
-  ) external payable override onlyController live returns (bytes32 subnode, uint32 accountIndex) {
+  ) public onlyController live {
     // Check if this name is valid
-    require(_valid(_name), "invalid name");
+    ///    require(_valid(_name), "invalid name");
     // This L2 owner should not own any name before
     require(_validPubKey(_pubKeyY), "pub key existed");
-    // Calculate price using PriceOracle
-    uint256 price = prices.price(_name);
-    // Check enough value
-    require(msg.value >= price, "nev");
+    /* // Calculate price using PriceOracle */
+    /* uint256 price = prices.price(_name); */
+    /* // Check enough value */
+    /* require(msg.value >= price, "nev"); */
 
-    // Get the name hash
-    bytes32 label = keccak256Hash(bytes(_name));
+    // Get the name hash - 改从入参传入
+    /* bytes32 label = keccak256Hash(bytes(_name)); */
     // This subnode should not be registered before
-    require(!zns.subNodeRecordExists(baseNode, label), "subnode existed");
+    ////    require(!zns.subNodeRecordExists(baseNode, label), "subnode existed");
     // Register subnode
-    (bytes32 subnode, uint32 accountIndex) = zns.setSubnodeRecord(
-      baseNode,
-      label,
-      _owner,
+    zns.setSubnodeRecord(
+      /* baseNode, */
+      nameHash,
+      accountIndex,
+      /* _owner, */
       _pubKeyX,
       _pubKeyY,
       _resolver
     );
 
     // Update L2 owner mapper
-    ZNSPubKeyMapper[_pubKeyY] = subnode;
+    ZNSPubKeyMapper[_pubKeyY] = nameHash;
 
-    emit ZNSRegistered(_name, subnode, accountIndex, _owner, _pubKeyX, _pubKeyY, price);
+    /* emit ZNSRegistered(_name, subnode, accountIndex, _owner, _pubKeyX, _pubKeyY, price); */
 
-    // Refund remained value to the owner of this name
-    if (msg.value > price) {
-      payable(_owner).transfer(msg.value - price);
-    }
-
-    return (subnode, accountIndex);
+    /* // Refund remained value to the owner of this name */
+    /* if (msg.value > price) { */
+    /*   payable(_owner).transfer(msg.value - price); */
+    /* } */
   }
 
   /// @notice ZNSController contract upgrade. Can be external because Proxy contract intercepts illegal calls of this function.

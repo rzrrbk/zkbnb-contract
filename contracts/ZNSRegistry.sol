@@ -42,29 +42,28 @@ contract ZNSRegistry is IZNS {
   }
 
   /**
-   * @dev Set the record for a subnode.
-   * @param _node The parent node.
-   * @param _label The hash of the subnode
-   * @param _owner The address of the new owner.
-   * @param _resolver The address of the resolver.
-   * @param _pubKeyX The layer-2 public key
-   * @param _pubKeyY The layer-2 public key
-   * @return subnode The name hash of the newly created label
-   * @return accountIndex The index of the created account name
-   */
+   /* * @dev Set the record for a subnode. */
+  /* * @param _node The parent node. */
+  /* * @param _label The hash of the subnode */
+  /* * @param _owner The address of the new owner. */
+  /* * @param _resolver The address of the resolver. */
+  /* * @param _pubKeyX The layer-2 public key */
+  /* * @param _pubKeyY The layer-2 public key */
+  /* * @return subnode The name hash of the newly created label */
+  /* * @return accountIndex The index of the created account name */
+  //   */
   function setSubnodeRecord(
-    bytes32 _node,
-    bytes32 _label,
-    address _owner,
+    /* bytes32 _node, */
+    bytes32 _nameHash,
+    /* address _owner, */
+    uint32 accountIndex,
     bytes32 _pubKeyX,
     bytes32 _pubKeyY,
     address _resolver
-  ) external override returns (bytes32, uint32) {
-    bytes32 subnode = setSubnodeOwner(_node, _label, _owner, _pubKeyX, _pubKeyY);
-    _setResolver(subnode, _resolver);
-    records[subnode].accountIndex = count;
-    count++;
-    return (subnode, records[subnode].accountIndex);
+  ) external {
+    /* bytes32 subnode = setSubnodeOwner(_node, _label, _owner, _pubKeyX, _pubKeyY); */
+    /* _setResolver(subnode, _resolver); */
+    records[_nameHash].accountIndex = accountIndex;
   }
 
   /**

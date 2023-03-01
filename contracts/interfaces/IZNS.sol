@@ -15,13 +15,14 @@ interface IZNS {
   event TLDAdded(bytes32 indexed node);
 
   function setSubnodeRecord(
-    bytes32 _node,
-    bytes32 _label,
-    address _owner,
+    /* bytes32 _node, */
+    bytes32 _nameHash,
+    /* address _owner, */
+    uint32 accountIndex,
     bytes32 _pubKeyX,
     bytes32 _pubKeyY,
     address _resolver
-  ) external returns (bytes32, uint32);
+  ) external;
 
   function setSubnodeOwner(
     bytes32 _node,
