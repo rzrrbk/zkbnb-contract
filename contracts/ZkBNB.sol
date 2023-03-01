@@ -90,15 +90,6 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
     }
   }
 
-  function registerZNS(
-    string calldata _name,
-    address _owner,
-    bytes32 _zkbnbPubKeyX,
-    bytes32 _zkbnbPubKeyY
-  ) external payable {
-    delegateAdditional();
-  }
-
   /// @notice Deposit Native Assets to Layer 2 - transfer ether from user into contract, validate it, register deposit
   /// @param _accountName the receiver account name
   function depositBNB(string calldata _accountName) external payable onlyActive {

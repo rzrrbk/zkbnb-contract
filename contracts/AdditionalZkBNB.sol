@@ -143,39 +143,6 @@ contract AdditionalZkBNB is Storage, Config, Events {
     emit BlocksRevert(totalBlocksVerified, blocksCommitted);
   }
 
-  function registerZNS(
-    string calldata _name,
-    address _owner,
-    bytes32 _zkbnbPubKeyX,
-    bytes32 _zkbnbPubKeyY
-  ) external payable {
-    // Register ZNS
-    (bytes32 node, uint32 accountIndex) = znsController.registerZNS{value: msg.value}(
-      _name,
-      _owner,
-      _zkbnbPubKeyX,
-      _zkbnbPubKeyY,
-      address(znsResolver)
-    );
-
-    // Priority Queue request
-    TxTypes.RegisterZNS memory _tx = TxTypes.RegisterZNS({
-      txType: uint8(TxTypes.TxType.RegisterZNS),
-      accountIndex: accountIndex,
-      accountName: Utils.stringToBytes20(_name),
-      accountNameHash: node,
-      pubKeyX: _zkbnbPubKeyX,
-      pubKeyY: _zkbnbPubKeyY
-    });
-    // compact pub data
-    bytes memory pubData = TxTypes.writeRegisterZNSPubDataForPriorityQueue(_tx);
-
-    // add into priority request queue
-    addPriorityRequest(TxTypes.TxType.RegisterZNS, pubData);
-
-    emit RegisterZNS(_name, node, _owner, _zkbnbPubKeyX, _zkbnbPubKeyY, accountIndex);
-  }
-
   /// @notice Deposit Native Assets to Layer 2 - transfer ether from user into contract, validate it, register deposit
   /// @param _accountName the receiver account name
   function depositBNB(string calldata _accountName) external payable onlyActive {
