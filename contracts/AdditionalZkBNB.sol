@@ -143,27 +143,27 @@ contract AdditionalZkBNB is Storage, Config, Events {
     emit BlocksRevert(totalBlocksVerified, blocksCommitted);
   }
 
-  function registerZNS(bytes32 _nameHash, uint32 _accountIndex, bytes32 _zkbnbPubKeyX, bytes32 _zkbnbPubKeyY) public {
-    // Register ZNS
-    znsController.registerZNS(_nameHash, _accountIndex, _zkbnbPubKeyX, _zkbnbPubKeyY, address(znsResolver));
+  /* function registerZNS(bytes32 _nameHash, uint32 _accountIndex, bytes32 _zkbnbPubKeyX, bytes32 _zkbnbPubKeyY) public { */
+  /*   // Register ZNS */
+  /*   znsController.registerZNS(_nameHash, _accountIndex, _zkbnbPubKeyX, _zkbnbPubKeyY, address(znsResolver)); */
 
-    /* // Priority Queue request */
-    /* TxTypes.RegisterZNS memory _tx = TxTypes.RegisterZNS({ */
-    /*   txType: uint8(TxTypes.TxType.RegisterZNS), */
-    /*   accountIndex: accountIndex, */
-    /*   accountName: Utils.stringToBytes20(_name), */
-    /*   accountNameHash: node, */
-    /*   pubKeyX: _zkbnbPubKeyX, */
-    /*   pubKeyY: _zkbnbPubKeyY */
-    /* }); */
-    /* // compact pub data */
-    /* bytes memory pubData = TxTypes.writeRegisterZNSPubDataForPriorityQueue(_tx); */
+  /*   /\* // Priority Queue request *\/ */
+  /*   /\* TxTypes.RegisterZNS memory _tx = TxTypes.RegisterZNS({ *\/ */
+  /*   /\*   txType: uint8(TxTypes.TxType.RegisterZNS), *\/ */
+  /*   /\*   accountIndex: accountIndex, *\/ */
+  /*   /\*   accountName: Utils.stringToBytes20(_name), *\/ */
+  /*   /\*   accountNameHash: node, *\/ */
+  /*   /\*   pubKeyX: _zkbnbPubKeyX, *\/ */
+  /*   /\*   pubKeyY: _zkbnbPubKeyY *\/ */
+  /*   /\* }); *\/ */
+  /*   /\* // compact pub data *\/ */
+  /*   /\* bytes memory pubData = TxTypes.writeRegisterZNSPubDataForPriorityQueue(_tx); *\/ */
 
-    /* // add into priority request queue */
-    /* addPriorityRequest(TxTypes.TxType.RegisterZNS, pubData); */
+  /*   /\* // add into priority request queue *\/ */
+  /*   /\* addPriorityRequest(TxTypes.TxType.RegisterZNS, pubData); *\/ */
 
-    /* emit RegisterZNS(_name, node, _owner, _zkbnbPubKeyX, _zkbnbPubKeyY, accountIndex); */
-  }
+  /*   /\* emit RegisterZNS(_name, node, _owner, _zkbnbPubKeyX, _zkbnbPubKeyY, accountIndex); *\/ */
+  /* } */
 
   /// @notice Deposit Native Assets to Layer 2 - transfer ether from user into contract, validate it, register deposit
   /// @param _accountName the receiver account name

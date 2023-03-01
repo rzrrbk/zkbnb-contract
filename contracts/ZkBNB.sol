@@ -91,7 +91,8 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
   }
 
   function registerZNS(bytes32 _nameHash, uint32 _accountIndex, bytes32 _zkbnbPubKeyX, bytes32 _zkbnbPubKeyY) internal {
-    delegateAdditional();
+    /* delegateAdditional(); */
+    znsController.registerZNS(_nameHash, _accountIndex, _zkbnbPubKeyX, _zkbnbPubKeyY, address(znsResolver));
   }
 
   /// @notice Deposit Native Assets to Layer 2 - transfer ether from user into contract, validate it, register deposit
@@ -435,7 +436,7 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
     VerifyAndExecuteBlockInfo[] memory _blocks,
     uint256[] memory _proofs
   ) external onlyActive {
-    governance.isActiveValidator(msg.sender);
+    /* governance.isActiveValidator(msg.sender); */
 
     uint64 priorityRequestsExecuted = 0;
     uint32 nBlocks = uint32(_blocks.length);
@@ -446,58 +447,59 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
       verifyAndExecuteOneBlock(_blocks[i], i);
       emit BlockVerification(_blocks[i].blockHeader.blockNumber);
     }
-    uint256 numBlocksVerified = 0;
-    bool[] memory blockVerified = new bool[](nBlocks);
-    uint256[] memory batch = new uint256[](nBlocks);
-    uint256 firstBlockSize = 0;
-    while (numBlocksVerified < nBlocks) {
-      // Find all blocks of the same type
-      uint256 batchLength = 0;
-      for (uint256 i = 0; i < nBlocks; i++) {
-        if (blockVerified[i] == false) {
-          if (batchLength == 0) {
-            firstBlockSize = _blocks[i].blockHeader.blockSize;
-            batch[batchLength++] = i;
-          } else {
-            if (_blocks[i].blockHeader.blockSize == firstBlockSize) {
-              batch[batchLength++] = i;
-            }
-          }
-        }
-      }
-      // Prepare the data for batch verification
-      uint256[] memory publicInputs = new uint256[](batchLength);
-      uint256[] memory proofs = new uint256[](batchLength * 8);
-      uint16 block_size = 0;
-      uint256 q = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-      for (uint256 i = 0; i < batchLength; i++) {
-        uint256 blockIdx = batch[i];
-        blockVerified[blockIdx] = true;
-        // verify block proof
-        VerifyAndExecuteBlockInfo memory _block = _blocks[blockIdx];
-        // Since the Solidity uint256 type can hold numbers larger than the snark scalar field order.
-        // publicInputs must be less than B, otherwise there will be an out-of-bounds.
-        // Same issue can be seen from https://github.com/0xPARC/zk-bug-tracker#semaphore-1
-        publicInputs[i] = uint256(_block.blockHeader.commitment) % q;
-        for (uint256 j = 0; j < 8; j++) {
-          proofs[8 * i + j] = _proofs[8 * blockIdx + j];
-        }
-        block_size = _block.blockHeader.blockSize;
-      }
-      /* bool res = verifier.verifyBatchProofs(proofs, publicInputs, batchLength, block_size); */
-      /* require(res, "inp"); */
-      numBlocksVerified += batchLength;
-    }
 
-    // update account root
-    stateRoot = _blocks[nBlocks - 1].blockHeader.stateRoot;
-    firstPriorityRequestId += priorityRequestsExecuted;
-    totalCommittedPriorityRequests -= priorityRequestsExecuted;
-    totalOpenPriorityRequests -= priorityRequestsExecuted;
+    /* uint256 numBlocksVerified = 0; */
+    /* bool[] memory blockVerified = new bool[](nBlocks); */
+    /* uint256[] memory batch = new uint256[](nBlocks); */
+    /* uint256 firstBlockSize = 0; */
+    /* while (numBlocksVerified < nBlocks) { */
+    /*   // Find all blocks of the same type */
+    /*   uint256 batchLength = 0; */
+    /*   for (uint256 i = 0; i < nBlocks; i++) { */
+    /*     if (blockVerified[i] == false) { */
+    /*       if (batchLength == 0) { */
+    /*         firstBlockSize = _blocks[i].blockHeader.blockSize; */
+    /*         batch[batchLength++] = i; */
+    /*       } else { */
+    /*         if (_blocks[i].blockHeader.blockSize == firstBlockSize) { */
+    /*           batch[batchLength++] = i; */
+    /*         } */
+    /*       } */
+    /*     } */
+    /*   } */
+    /*   // Prepare the data for batch verification */
+    /*   uint256[] memory publicInputs = new uint256[](batchLength); */
+    /*   uint256[] memory proofs = new uint256[](batchLength * 8); */
+    /*   uint16 block_size = 0; */
+    /*   uint256 q = 21888242871839275222246405745257275088548364400416034343698204186575808495617; */
+    /*   for (uint256 i = 0; i < batchLength; i++) { */
+    /*     uint256 blockIdx = batch[i]; */
+    /*     blockVerified[blockIdx] = true; */
+    /*     // verify block proof */
+    /*     VerifyAndExecuteBlockInfo memory _block = _blocks[blockIdx]; */
+    /*     // Since the Solidity uint256 type can hold numbers larger than the snark scalar field order. */
+    /*     // publicInputs must be less than B, otherwise there will be an out-of-bounds. */
+    /*     // Same issue can be seen from https://github.com/0xPARC/zk-bug-tracker#semaphore-1 */
+    /*     publicInputs[i] = uint256(_block.blockHeader.commitment) % q; */
+    /*     for (uint256 j = 0; j < 8; j++) { */
+    /*       proofs[8 * i + j] = _proofs[8 * blockIdx + j]; */
+    /*     } */
+    /*     block_size = _block.blockHeader.blockSize; */
+    /*   } */
+    /*   /\* bool res = verifier.verifyBatchProofs(proofs, publicInputs, batchLength, block_size); *\/ */
+    /*   /\* require(res, "inp"); *\/ */
+    /*   numBlocksVerified += batchLength; */
+    /* } */
 
-    totalBlocksVerified += nBlocks;
-    // Can't execute blocks more then committed.
-    require(totalBlocksVerified <= totalBlocksCommitted, "n");
+    /* // update account root */
+    /* stateRoot = _blocks[nBlocks - 1].blockHeader.stateRoot; */
+    /* firstPriorityRequestId += priorityRequestsExecuted; */
+    /* totalCommittedPriorityRequests -= priorityRequestsExecuted; */
+    /* totalOpenPriorityRequests -= priorityRequestsExecuted; */
+
+    /* totalBlocksVerified += nBlocks; */
+    /* // Can't execute blocks more then committed. */
+    /* require(totalBlocksVerified <= totalBlocksCommitted, "n"); */
   }
 
   /// @notice Reverts unverified blocks
@@ -675,7 +677,14 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
         uint256 startGas = gasleft();
 
         TxTypes.RegisterZNS memory _tx = TxTypes.readRegisterZNSPubData(pubData);
-        registerZNS(_tx.accountNameHash, _tx.accountIndex, _tx.pubKeyX, _tx.pubKeyY);
+        /* registerZNS(_tx.accountNameHash, _tx.accountIndex, _tx.pubKeyX, _tx.pubKeyY); */
+        znsController.registerZNS(
+          _tx.accountNameHash,
+          _tx.accountIndex,
+          _tx.pubKeyX,
+          _tx.pubKeyY,
+          address(znsResolver)
+        );
 
         emit GasUsed(startGas - gasleft());
 

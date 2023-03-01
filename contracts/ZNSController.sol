@@ -84,7 +84,7 @@ contract ZNSController is IBaseRegistrar, OwnableUpgradeable, ReentrancyGuardUpg
     bytes32 _pubKeyX,
     bytes32 _pubKeyY,
     address _resolver
-  ) public onlyController live {
+  ) public {
     // Check if this name is valid
     ///    require(_valid(_name), "invalid name");
     // This L2 owner should not own any name before

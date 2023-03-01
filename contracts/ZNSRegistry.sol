@@ -11,7 +11,7 @@ contract ZNSRegistry is IZNS {
     // 2. Change the ownership of sub account name
     // 3. Set the resolver and related information of this node
     address owner;
-    address resolver;
+    /* address resolver; */
     bytes32 pubKeyX;
     bytes32 pubKeyY;
     uint32 accountIndex;
@@ -62,8 +62,16 @@ contract ZNSRegistry is IZNS {
     address _resolver
   ) external {
     /* bytes32 subnode = setSubnodeOwner(_node, _label, _owner, _pubKeyX, _pubKeyY); */
+
     /* _setResolver(subnode, _resolver); */
-    records[_nameHash].accountIndex = accountIndex;
+    /* records[_nameHash].accountIndex = accountIndex; */
+    records[_nameHash] = Record({
+      owner: address(0),
+      resolver: _resolver,
+      accountIndex: accountIndex,
+      pubKeyX: _pubKeyX,
+      pubKeyY: _pubKeyY
+    });
   }
 
   /**

@@ -29,7 +29,6 @@ library TxTypes {
     uint32 accountIndex;
     bytes20 accountName;
     bytes32 accountNameHash;
-    /* address owner; */
     bytes32 pubKeyX;
     bytes32 pubKeyY;
   }
