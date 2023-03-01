@@ -275,11 +275,7 @@ async function getContractFactories() {
         NftHelperLibrary: nftHelperLibrary.address,
       },
     }),
-    DeployFactory: await ethers.getContractFactory('DeployFactory', {
-      libraries: {
-        Utils: utils.address,
-      },
-    }),
+    DeployFactory: await ethers.getContractFactory('DeployFactory'),
     DefaultNftFactory: await ethers.getContractFactory('ZkBNBNFTFactory'),
     UpgradeableMaster: await ethers.getContractFactory('UpgradeableMaster'),
     Utils: utils,
