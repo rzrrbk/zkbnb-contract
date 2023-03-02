@@ -660,8 +660,8 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
         // withdraw NFT
         withdrawOrStoreNFT(_tx);
       } else if (txType == TxTypes.TxType.RegisterZNS) {
-        TxTypes.RegisterZNS memory _tx = TxTypes.readRegisterZNSPubData(pubData);
-        addNameInfo(_tx.accountNameHash, _tx.accountIndex, address(666));
+        /* TxTypes.RegisterZNS memory _tx = TxTypes.readRegisterZNSPubData(pubData); */
+        /* addNameInfo(_tx.accountNameHash, _tx.accountIndex, address(666)); */
       } else {
         // unsupported _tx in block verification
         revert("l");
