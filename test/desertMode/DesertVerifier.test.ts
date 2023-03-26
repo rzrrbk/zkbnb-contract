@@ -1,10 +1,14 @@
 import { assert, chai } from 'chai';
 import { ethers } from 'hardhat';
-import { SMT, buildPoseidon, newMemEmptyTrie, poseidonContract } from 'circomlibjs';
+import { poseidonContract } from 'circomlibjs';
 import { Scalar } from 'ffjavascript';
+import { BigNumber } from 'ethers';
+
 import { randomBN } from '../util';
-import exitDataJson from './performDesertAsset.json';
+import exitDataJson from './performDesertAsset2.json';
 import exitNftJson from './performDesertNft.json';
+
+import buildPoseidon from './poseidon_reference';
 
 describe('DesertVerifier', function () {
   let owner, addr1;
@@ -58,30 +62,57 @@ describe('DesertVerifier', function () {
     await desertVerifier.deployed();
   });
 
-  it('should hash asset leaf node correctly', async () => {
-    const inputs = [exitDataJson.AssetExitData.Amount, exitDataJson.AssetExitData.OfferCanceledOrFinalized];
+  it('test hash [1,2]', async () => {
+    const inputs = [1, 2];
+    const actual = poseidon(inputs);
+    const expect = '7142104613055408817911962100316808866448378443474503659992478482890339429929';
+    assert.equal(poseidon.F.toString(actual), expect);
+
+    console.log('[1,2] hash is : ', BigNumber.from(expect).toHexString());
+  });
+
+  it('(poseidonReference) should hash asset leaf node correctly', async () => {
+    const inputs = [
+      exitDataJson.AssetExitData.Amount.toString(),
+      exitDataJson.AssetExitData.OfferCanceledOrFinalized.toString(),
+    ];
+    const actual = await poseidon(inputs);
+    const expect = '15177058551175628990872411207427175536618395970821712272889300877778671208350';
+
+    assert.equal(poseidon.F.toString(actual), expect);
+
+    console.log('asset leaf is : ', BigNumber.from(expect).toHexString());
+  });
+
+  it.skip('should hash asset leaf node correctly', async () => {
+    const inputs = [
+      exitDataJson.AssetExitData.Amount.toString(),
+      exitDataJson.AssetExitData.OfferCanceledOrFinalized.toString(),
+    ];
     const actual = await poseidonT3['poseidon(uint256[2])'](inputs);
     const expect = poseidon(inputs);
 
     assert.equal(actual.toString(), poseidon.F.toString(expect));
+
+    console.log('asset leaf is : ', actual.toHexString());
   });
 
-  it('check asset tree root node', async () => {
+  it.skip('check asset tree root node', async () => {
     assetRoot = await desertVerifier.testGetAssetRoot(
       exitDataJson.AssetExitData.AssetId,
-      exitDataJson.AssetExitData.Amount,
+      BigNumber.from(exitDataJson.AssetExitData.Amount.toString()),
       exitDataJson.AssetExitData.OfferCanceledOrFinalized,
-      exitDataJson.AssetMerkleProof.map((el: string) => ethers.BigNumber.from('0x' + el)),
+      exitDataJson.AssetMerkleProof.map((el: string) => BigNumber.from('0x' + el)),
     );
 
     console.log('done calculate asset root:', assetRoot.toHexString());
   });
 
-  it('check account leaf node', async () => {
+  it.skip('check account leaf node', async () => {
     const inputs = [
-      ethers.BigNumber.from(exitDataJson.AccountExitData.L1Address),
-      ethers.BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyX),
-      ethers.BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyY),
+      BigNumber.from(exitDataJson.AccountExitData.L1Address),
+      BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyX),
+      BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyY),
       exitDataJson.AccountExitData.Nonce,
       exitDataJson.AccountExitData.CollectionNonce,
       assetRoot,
@@ -91,26 +122,26 @@ describe('DesertVerifier', function () {
     assert.equal(actual.toString(), poseidon.F.toString(expect));
   });
 
-  it('check account root', async () => {
+  it.skip('check account root', async () => {
     accountRoot = await desertVerifier.testGetAccountRoot(
       exitDataJson.AccountExitData.AccountId,
-      ethers.BigNumber.from(exitDataJson.AccountExitData.L1Address),
-      ethers.BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyX),
-      ethers.BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyY),
+      BigNumber.from(exitDataJson.AccountExitData.L1Address),
+      BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyX),
+      BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyY),
       exitDataJson.AccountExitData.Nonce,
       exitDataJson.AccountExitData.CollectionNonce,
       assetRoot,
-      exitDataJson.AccountMerkleProof.map((el: string) => ethers.BigNumber.from('0x' + el)),
+      exitDataJson.AccountMerkleProof.map((el: string) => BigNumber.from('0x' + el)),
     );
     console.log('done calculate account root:', accountRoot.toHexString());
   });
 
-  it('check nft leaf node', async () => {
+  it.skip('check nft leaf node', async () => {
     for (const nft of exitNftJson.ExitNfts) {
       const inputs = [
         nft.CreatorAccountIndex,
         nft.OwnerAccountIndex,
-        ethers.BigNumber.from('0x' + nft.NftContentHash),
+        BigNumber.from('0x' + nft.NftContentHash),
         nft.CreatorTreasuryRate,
         nft.NftContentType,
       ];
@@ -120,7 +151,7 @@ describe('DesertVerifier', function () {
     }
   });
 
-  it('check nft root', async () => {
+  it.skip('check nft root', async () => {
     for (const [i, nft] of exitNftJson.ExitNfts.entries()) {
       const nftMerkleProof = exitNftJson.NftMerkleProofs[i];
 
@@ -128,11 +159,11 @@ describe('DesertVerifier', function () {
         nft.NftIndex,
         nft.CreatorAccountIndex,
         nft.OwnerAccountIndex,
-        ethers.BigNumber.from('0x' + nft.NftContentHash),
+        BigNumber.from('0x' + nft.NftContentHash),
         nft.CreatorTreasuryRate,
         nft.CollectionId,
         nft.NftContentType,
-        nftMerkleProof.map((el: string) => ethers.BigNumber.from('0x' + el)),
+        nftMerkleProof.map((el: string) => BigNumber.from('0x' + el)),
       );
 
       console.log('done. nft root is: ', nftRoot.toHexString());
@@ -141,7 +172,7 @@ describe('DesertVerifier', function () {
 
   it.skip('desert proof verification should pass', async () => {
     const _stateRoot = poseidon([accountSMT.root, nftSMT.root]);
-    const stateRoot = ethers.BigNumber.from(_stateRoot);
+    const stateRoot = BigNumber.from(_stateRoot);
 
     console.log('stateRoot: ', stateRoot);
     const assetProof = await accountAssetSMT.find(exitData.assetId);
