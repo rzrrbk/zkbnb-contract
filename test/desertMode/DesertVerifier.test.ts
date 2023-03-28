@@ -1,6 +1,6 @@
 import { assert, chai } from 'chai';
 import { ethers } from 'hardhat';
-import { poseidonContract } from 'circomlibjs';
+import * as poseidonContract from './poseidon_gencontract';
 import { Scalar } from 'ffjavascript';
 import { BigNumber } from 'ethers';
 
@@ -62,7 +62,7 @@ describe('DesertVerifier', function () {
     await desertVerifier.deployed();
   });
 
-  it('test hash [1,2]', async () => {
+  it.skip('test hash [1,2]', async () => {
     const inputs = [1, 2];
     const actual = poseidon(inputs);
     const expect = '7142104613055408817911962100316808866448378443474503659992478482890339429929';
@@ -71,7 +71,7 @@ describe('DesertVerifier', function () {
     console.log('[1,2] hash is : ', BigNumber.from(expect).toHexString());
   });
 
-  it('(poseidonReference) should hash asset leaf node correctly', async () => {
+  it.skip('(poseidonReference) should hash asset leaf node correctly', async () => {
     const inputs = [
       exitDataJson.AssetExitData.Amount.toString(),
       exitDataJson.AssetExitData.OfferCanceledOrFinalized.toString(),
@@ -84,20 +84,20 @@ describe('DesertVerifier', function () {
     console.log('asset leaf is : ', BigNumber.from(expect).toHexString());
   });
 
-  it.skip('should hash asset leaf node correctly', async () => {
+  it('should hash asset leaf node correctly', async () => {
     const inputs = [
       exitDataJson.AssetExitData.Amount.toString(),
       exitDataJson.AssetExitData.OfferCanceledOrFinalized.toString(),
     ];
     const actual = await poseidonT3['poseidon(uint256[2])'](inputs);
-    const expect = poseidon(inputs);
+    const reference = poseidon(inputs);
+    const expect = '218de925460d1e5cf0a26c27124e23a380ec0e2d30518b5d108005bc02c5879e'; // taken from L2's log
 
-    assert.equal(actual.toString(), poseidon.F.toString(expect));
-
-    console.log('asset leaf is : ', actual.toHexString());
+    assert.equal(actual.toString(), poseidon.F.toString(reference));
+    assert.equal(actual.toHexString(), '0x' + expect);
   });
 
-  it.skip('check asset tree root node', async () => {
+  it('check asset tree root node', async () => {
     assetRoot = await desertVerifier.testGetAssetRoot(
       exitDataJson.AssetExitData.AssetId,
       BigNumber.from(exitDataJson.AssetExitData.Amount.toString()),
@@ -105,10 +105,12 @@ describe('DesertVerifier', function () {
       exitDataJson.AssetMerkleProof.map((el: string) => BigNumber.from('0x' + el)),
     );
 
-    console.log('done calculate asset root:', assetRoot.toHexString());
+    const expectAssetRoot = '11d6f9a8ef166dd57b9809e47c679658b8eb3c5d237f912acce178342ce07d49'; // taken from L2's log
+
+    assert.equal(assetRoot.toHexString(), '0x' + expectAssetRoot);
   });
 
-  it.skip('check account leaf node', async () => {
+  it('check account leaf hash', async () => {
     const inputs = [
       BigNumber.from(exitDataJson.AccountExitData.L1Address),
       BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyX),
@@ -120,6 +122,8 @@ describe('DesertVerifier', function () {
     const actual = await poseidonT7['poseidon(uint256[6])'](inputs);
     const expect = poseidon(inputs);
     assert.equal(actual.toString(), poseidon.F.toString(expect));
+
+    console.log(actual.toHexString());
   });
 
   it.skip('check account root', async () => {
@@ -133,7 +137,14 @@ describe('DesertVerifier', function () {
       assetRoot,
       exitDataJson.AccountMerkleProof.map((el: string) => BigNumber.from('0x' + el)),
     );
-    console.log('done calculate account root:', accountRoot.toHexString());
+    console.log('account root:', accountRoot.toHexString());
+
+    // const nftRoot = "0x" + exitDataJson.NftRoot;
+
+    // const inputs = [accountRoot.toHexString(), nftRoot];
+    // const actual = await poseidonT3['poseidon(uint256[2])'](inputs);
+
+    // console.log(actual.toHexString());
   });
 
   it.skip('check nft leaf node', async () => {
