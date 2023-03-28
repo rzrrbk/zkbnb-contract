@@ -5,7 +5,8 @@ import { Scalar } from 'ffjavascript';
 import { BigNumber } from 'ethers';
 
 import { randomBN } from '../util';
-import exitDataJson from './performDesertAsset2.json';
+// import exitDataJson from './performDesertAsset2.json';
+import exitDataJson from './performDesertAsset555.json';
 // import exitDataJson from './performDesertAsset222.json';
 // import exitDataJson from './performDesertAsset333.json';
 // import exitDataJson from './performDesertAsset444.json';
@@ -31,6 +32,7 @@ describe('DesertVerifier', function () {
   let accountLeafHash;
   let accountRoot;
   let nftRoot;
+  let stateHash;
 
   before(async function () {
     [owner, addr1] = await ethers.getSigners();
@@ -159,11 +161,36 @@ describe('DesertVerifier', function () {
 
   it('check state hash', async () => {
     const inputs = [accountRoot, '0x' + exitDataJson.NftRoot];
-    const stateHash = await poseidonT3['poseidon(uint256[2])'](inputs);
+    const _stateHash = await poseidonT3['poseidon(uint256[2])'](inputs);
     const expectStateHash = '24f44b2a9149d4c5618369b5b4f4214f081330907c0f7deaa4d68f8e670bbe75';
 
-    assert.equal(stateHash.toHexString(), '0x' + expectStateHash);
-    console.log('state hash: ', stateHash.toHexString());
+    assert.equal(_stateHash.toHexString(), '0x' + expectStateHash);
+    console.log('state hash: ', _stateHash.toHexString());
+    stateHash = _stateHash;
+  });
+
+  it('desert proof verification should pass', async () => {
+    const res = await desertVerifier.verifyExitProofBalance(
+      stateHash,
+      '0x' + exitDataJson.NftRoot,
+      [
+        exitDataJson.AssetExitData.AssetId,
+        BigNumber.from(exitDataJson.AssetExitData.Amount.toString()),
+        exitDataJson.AssetExitData.OfferCanceledOrFinalized,
+      ],
+      [
+        exitDataJson.AccountExitData.AccountId,
+        exitDataJson.AccountExitData.L1Address,
+        ethers.utils.hexZeroPad(BigNumber.from(exitDataJson.AccountExitData.PubKeyX).toHexString(), 32),
+        ethers.utils.hexZeroPad(BigNumber.from(exitDataJson.AccountExitData.PubKeyY).toHexString(), 32),
+        exitDataJson.AccountExitData.Nonce,
+        exitDataJson.AccountExitData.CollectionNonce,
+      ],
+      exitDataJson.AssetMerkleProof.map((el: string) => BigNumber.from('0x' + el)),
+      exitDataJson.AccountMerkleProof.map((el: string) => BigNumber.from('0x' + el)),
+    );
+
+    assert(res);
   });
 
   it.skip('check nft leaf node', async () => {
@@ -198,34 +225,5 @@ describe('DesertVerifier', function () {
 
       console.log('done. nft root is: ', nftRoot.toHexString());
     }
-  });
-
-  it.skip('desert proof verification should pass', async () => {
-    const _stateRoot = poseidon([accountSMT.root, nftSMT.root]);
-    const stateRoot = BigNumber.from(_stateRoot);
-
-    console.log('stateRoot: ', stateRoot);
-    const assetProof = await accountAssetSMT.find(exitData.assetId);
-    const accountProof = await accountSMT.find(exitData.accountId);
-    const nftProof = await nftSMT.find(exitData.nftIndex);
-
-    console.log(assetProof.siblings);
-    console.log(accountProof.siblings);
-    console.log(nftProof.siblings);
-
-    const assetMerkleProof = toProofParam(assetProof.siblings, 15);
-    const accountMerkleProof = toProofParam(accountProof, 31);
-    const nftMerkleProof = toProofParam(nftProof, 39);
-
-    const res = await desertVerifier.verifyExitProof(
-      stateRoot,
-      [0, 2, 0, 100, 1, randomBN(), randomBN(), randomBN(), 1, 1, 1, 2, randomBN(), 5, 1],
-      assetMerkleProof,
-      accountMerkleProof,
-      nftMerkleProof,
-    );
-
-    // assert(res);
-    console.log('done verifyExitProof: ', res);
   });
 });

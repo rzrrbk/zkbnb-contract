@@ -65,6 +65,12 @@ contract DesertVerifier {
       assetRoot,
       accountMerkleProof
     );
+
+    /* uint res = hashNode(accountRoot, nftRoot); */
+    /* console.log("expect state root is: %s", stateRoot); */
+    /* bytes32 re = bytes32(res); */
+    /* console.logBytes32(re); */
+
     return (hashNode(accountRoot, nftRoot) == stateRoot);
   }
 
