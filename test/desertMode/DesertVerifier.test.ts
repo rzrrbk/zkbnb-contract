@@ -6,6 +6,9 @@ import { BigNumber } from 'ethers';
 
 import { randomBN } from '../util';
 import exitDataJson from './performDesertAsset2.json';
+// import exitDataJson from './performDesertAsset222.json';
+// import exitDataJson from './performDesertAsset333.json';
+// import exitDataJson from './performDesertAsset444.json';
 import exitNftJson from './performDesertNft.json';
 
 import buildPoseidon from './poseidon_reference';
@@ -25,6 +28,7 @@ describe('DesertVerifier', function () {
   let desertVerifier;
 
   let assetRoot;
+  let accountLeafHash;
   let accountRoot;
   let nftRoot;
 
@@ -62,13 +66,15 @@ describe('DesertVerifier', function () {
     await desertVerifier.deployed();
   });
 
-  it.skip('test hash [1,2]', async () => {
+  it.skip('test hash [1,2] and [2,1]', async () => {
     const inputs = [1, 2];
     const actual = poseidon(inputs);
     const expect = '7142104613055408817911962100316808866448378443474503659992478482890339429929';
     assert.equal(poseidon.F.toString(actual), expect);
 
     console.log('[1,2] hash is : ', BigNumber.from(expect).toHexString());
+    const res = poseidon.F.toString([2, 1]);
+    console.log('[2,1] hash is : ', BigNumber.from(res).toHexString());
   });
 
   it.skip('(poseidonReference) should hash asset leaf node correctly', async () => {
@@ -108,43 +114,56 @@ describe('DesertVerifier', function () {
     const expectAssetRoot = '11d6f9a8ef166dd57b9809e47c679658b8eb3c5d237f912acce178342ce07d49'; // taken from L2's log
 
     assert.equal(assetRoot.toHexString(), '0x' + expectAssetRoot);
+    console.log('asset root: ', assetRoot.toHexString());
   });
 
   it('check account leaf hash', async () => {
     const inputs = [
-      BigNumber.from(exitDataJson.AccountExitData.L1Address),
-      BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyX),
-      BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyY),
+      exitDataJson.AccountExitData.L1Address,
+      // BigNumber.from(exitDataJson.AccountExitData.L1Address),
+      exitDataJson.AccountExitData.PubKeyX,
+      exitDataJson.AccountExitData.PubKeyY,
+      // BigNumber.from(exitDataJson.AccountExitData.PubKeyX),
+      // BigNumber.from(exitDataJson.AccountExitData.PubKeyY),
       exitDataJson.AccountExitData.Nonce,
       exitDataJson.AccountExitData.CollectionNonce,
       assetRoot,
     ];
+
     const actual = await poseidonT7['poseidon(uint256[6])'](inputs);
     const expect = poseidon(inputs);
     assert.equal(actual.toString(), poseidon.F.toString(expect));
 
-    console.log(actual.toHexString());
+    const expectLog = '0x8d177d83a2bcfc59091b802531712ae222bb78b586ac1a5099b02d92104b84';
+    assert.equal(actual.toHexString(), expectLog);
+    console.log('account Leaf: ', actual.toHexString());
+    accountLeafHash = actual;
   });
 
-  it.skip('check account root', async () => {
+  it('check account root', async () => {
     accountRoot = await desertVerifier.testGetAccountRoot(
       exitDataJson.AccountExitData.AccountId,
-      BigNumber.from(exitDataJson.AccountExitData.L1Address),
-      BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyX),
-      BigNumber.from('0x' + exitDataJson.AccountExitData.PubKeyY),
+      exitDataJson.AccountExitData.L1Address,
+      exitDataJson.AccountExitData.PubKeyX,
+      exitDataJson.AccountExitData.PubKeyY,
       exitDataJson.AccountExitData.Nonce,
       exitDataJson.AccountExitData.CollectionNonce,
       assetRoot,
       exitDataJson.AccountMerkleProof.map((el: string) => BigNumber.from('0x' + el)),
     );
+
+    const expectAccountRoot = '2a754f8b0b683bd08de6425b8b36be15a7f29d32bb4ee37873e43a5721b3d32c';
+    assert.equal(accountRoot.toHexString(), '0x' + expectAccountRoot);
     console.log('account root:', accountRoot.toHexString());
+  });
 
-    // const nftRoot = "0x" + exitDataJson.NftRoot;
+  it('check state hash', async () => {
+    const inputs = [accountRoot, '0x' + exitDataJson.NftRoot];
+    const stateHash = await poseidonT3['poseidon(uint256[2])'](inputs);
+    const expectStateHash = '24f44b2a9149d4c5618369b5b4f4214f081330907c0f7deaa4d68f8e670bbe75';
 
-    // const inputs = [accountRoot.toHexString(), nftRoot];
-    // const actual = await poseidonT3['poseidon(uint256[2])'](inputs);
-
-    // console.log(actual.toHexString());
+    assert.equal(stateHash.toHexString(), '0x' + expectStateHash);
+    console.log('state hash: ', stateHash.toHexString());
   });
 
   it.skip('check nft leaf node', async () => {

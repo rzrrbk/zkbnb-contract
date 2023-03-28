@@ -10,6 +10,14 @@ contract DesertVerifierTest is DesertVerifier {
     address _poseidonT7
   ) DesertVerifier(_poseidonT3, _poseidonT6, _poseidonT7) {}
 
+  function testAccountRootByLeaf(
+    uint32 accountId,
+    uint accountLeafHash,
+    uint256[32] memory accountMerkleProof
+  ) external view returns (uint256) {
+    return getAccountRootByLeaf(accountId, accountLeafHash, accountMerkleProof);
+  }
+
   function testGetAssetRoot(
     uint16 assetId,
     uint256 amount,

@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "./interfaces/IPoseidon.sol";
 
+import "hardhat/console.sol";
+
 contract DesertVerifier {
   IPoseidonT3 poseidonT3;
   IPoseidonT6 poseidonT6;
@@ -120,12 +122,18 @@ contract DesertVerifier {
   ) internal view returns (uint256) {
     require(assetMerkleProof.length == 16, "L1");
 
+    console.log("check assetId: %s", assetId);
+
     uint256 assetLeafHash = hashNode(amount, offerCanceledOrFinalized);
     uint256 rootHash = assetLeafHash;
 
     for (uint16 i = 0; i < 16; i++) {
       uint256 siblingProof = assetMerkleProof[i];
-      bool isLeft = ((assetId >> (15 - i)) & 0x01) == 1;
+      /* uint remain = assetId >> (15 - i); */
+      uint remain = assetId >> i;
+
+      bool isLeft = (remain & 0x01) == 1;
+      /* console.log("assetId remain bit is: %s", remain); */
 
       if (isLeft) {
         rootHash = hashNode(siblingProof, rootHash);
@@ -137,6 +145,7 @@ contract DesertVerifier {
     return rootHash;
   }
 
+  // accountId - 32 bits
   function getAccountRoot(
     uint32 accountId,
     uint256 l1Address,
@@ -147,6 +156,8 @@ contract DesertVerifier {
     uint256 assetRoot,
     uint256[32] memory accountMerkleProof
   ) internal view returns (uint256) {
+    console.log("check accountId: %s", accountId);
+
     uint256[6] memory inputs;
     inputs[0] = l1Address;
     inputs[1] = pubKeyX;
@@ -155,6 +166,31 @@ contract DesertVerifier {
     inputs[4] = collectionNonce;
     inputs[5] = assetRoot;
     uint256 accountLeafHash = poseidonT7.poseidon(inputs);
+    uint256 rootHash = accountLeafHash;
+
+    for (uint16 i = 0; i < 32; i++) {
+      uint256 siblingProof = accountMerkleProof[i];
+      /* uint remain = accountId >> (31 - i); */
+      uint remain = accountId >> i;
+      bool isLeft = (remain & 0x01) == 1;
+
+      /* console.log("accountId remain bit is: %s", remain); */
+
+      if (isLeft) {
+        rootHash = hashNode(siblingProof, rootHash);
+      } else {
+        rootHash = hashNode(rootHash, siblingProof);
+      }
+    }
+
+    return rootHash;
+  }
+
+  function getAccountRootByLeaf(
+    uint32 accountId,
+    uint accountLeafHash,
+    uint256[32] memory accountMerkleProof
+  ) internal view returns (uint256) {
     uint256 rootHash = accountLeafHash;
 
     for (uint16 i = 0; i < 32; i++) {
@@ -199,7 +235,9 @@ contract DesertVerifier {
 
     for (uint16 i = 0; i < 40; i++) {
       uint256 siblingProof = nftMerkleProof[i];
-      bool isLeft = ((nftIndex >> (39 - i)) & 0x01) == 1;
+      uint remain = nftIndex >> i;
+
+      bool isLeft = (remain & 0x01) == 1;
 
       if (isLeft) {
         rootHash = hashNode(siblingProof, rootHash);
