@@ -180,7 +180,7 @@ contract AdditionalZkBNB is Storage, Config, Events {
     emit BlocksRevert(totalBlocksVerified, blocksCommitted);
   }
 
-  /// @notice Deposit Native Assets to Layer 2 - transfer ether from user into contract, validate it, register deposit
+  /// @notice Deposit Native Assets to Layer 2 - transfer BNB from user into contract, validate it, register deposit
   /// @param _to the receiver L1 address
   function depositBNB(address _to) external payable onlyActive {
     require(msg.value != 0, "ia");

@@ -53,7 +53,7 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
   }
 
   /// @notice Checks if Desert mode must be entered. If true - enters desert mode and emits DesertMode event.
-  /// @dev Desert mode must be entered in case of current ethereum block number is higher than the oldest
+  /// @dev Desert mode must be entered in case of current L1 block number is higher than the oldest
   /// @dev of existed priority requests expiration block number.
   /// @return bool flag that is true if the desert mode must be entered.
   function activateDesertMode() public returns (bool) {
@@ -153,7 +153,7 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
     }
   }
 
-  /// @notice Deposit Native Assets to Layer 2 - transfer ether from user into contract, validate it, register deposit
+  /// @notice Deposit Native Assets to Layer 2 - transfer BNB from user into contract, validate it, register deposit
   /// @param _to the receiver L1 address
   function depositBNB(address _to) external payable onlyActive {
     delegateAdditional();
@@ -669,7 +669,7 @@ contract ZkBNB is Events, Storage, Config, ReentrancyGuardUpgradeable, IERC721Re
     }
   }
 
-  /// @notice Sends ETH
+  /// @notice Sends BNB
   /// @param _to Address of recipient
   /// @param _amount Amount of tokens to transfer
   /// @return bool flag indicating that transfer is successful

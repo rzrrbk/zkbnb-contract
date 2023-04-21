@@ -77,8 +77,6 @@ contract Governance is Config, Initializable {
 
     networkGovernor = _networkGovernor;
 
-    // TODO： initialize assets（0 => BNB, 1 => BUSD)
-
     // initialize nftBaseURIs
     nftBaseURIs[0] = "ipfs://f01701220";
   }
@@ -117,12 +115,11 @@ contract Governance is Config, Initializable {
 
     ++totalAssets;
     uint16 newAssetId = totalAssets;
-    // it is not `totalTokens - 1` because tokenId = 0 is reserved for eth
+    // it is not `totalTokens - 1` because tokenId = 0 is reserved for BNB
 
     assetAddresses[newAssetId] = _asset;
     assetsList[_asset] = newAssetId;
 
-    // TODO: BUSD should be initialize
     if (newAssetId > 1) {
       // 0 => BNB,  1 => BUSD
       emit NewAsset(_asset, newAssetId);
